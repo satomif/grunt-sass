@@ -14,7 +14,7 @@ module.exports = function (grunt) {
 			});
 
 			el.src.forEach(function(src) {
-				grunt.log.error('src file:' + src + '\n');
+				grunt.log.debug('src file:' + src + '\n');
 
 				if (!src || path.basename(src)[0] === '_') {
 					next();
@@ -32,7 +32,7 @@ module.exports = function (grunt) {
 						dest = src.replace("scss","css");
 					}
 				}
-				grunt.log.error('dest file:' + dest + '\n');
+				grunt.log.debug('dest file:' + dest + '\n');
 
 				sass.render(assign({}, opts, {
 					file: src,
