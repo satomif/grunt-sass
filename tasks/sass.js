@@ -13,32 +13,48 @@ module.exports = function (grunt) {
 				precision: 10
 			});
 
-			var src = el.src[0];
+			el.src.forEach(function(src) {
+				grunt.log.debug('src file:' + src + '\n');
 
-			if (!src || path.basename(src)[0] === '_') {
-				next();
-				return;
-			}
-
-			sass.render(assign({}, opts, {
-				file: src,
-				outFile: el.dest
-			}), function (err, res) {
-				if (err) {
-					grunt.log.error(err.formatted + '\n');
-					grunt.warn('');
-					next(err);
+				if (!src || path.basename(src)[0] === '_') {
+					next();
 					return;
 				}
 
-				grunt.file.write(el.dest, res.css);
-
-				if (opts.sourceMap) {
-					grunt.file.write(this.options.sourceMap, res.map);
+				var dest = src.replace("scss","css");
+				if (!el.dest) {
+					if (opts.destDir) {
+						var buff = src.split('/');
+						var file = buff[buff.length-1];
+						var dest = opts.destDir + file.replace("scss","css");
+					} else {
+						var dest = el.dest;
+						dest = src.replace("scss","css");
+					}
 				}
+				grunt.log.debug('dest file:' + dest + '\n');
 
-				next();
+				sass.render(assign({}, opts, {
+					file: src,
+					outFile: dest
+				}), function (err, res) {
+					if (err) {
+						grunt.log.error(err.message + '\n  ' + 'Line ' + err.line + '  Column ' + err.column + '  ' + path.relative(process.cwd(), err.file) + '\n');
+						grunt.warn('');
+						next(err);
+						return;
+					}
+
+					grunt.file.write(dest, res.css);
+
+					if (opts.sourceMap) {
+						grunt.file.write(this.options.sourceMap, res.map);
+					}
+
+					next();
+				});
 			});
 		}.bind(this), this.async());
 	});
 };
+
